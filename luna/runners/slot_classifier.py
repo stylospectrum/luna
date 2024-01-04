@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 
 
 class SlotClassifierRunnable(bentoml.Runnable):
-    SUPPORTED_RESOURCES = ("cpu",)
-    SUPPORTS_CPU_MULTI_THREADING = False
+    SUPPORTED_RESOURCES = ("nvidia.com/gpu",)
+    SUPPORTS_CPU_MULTI_THREADING = True
 
     def __init__(self):
         self.inference = SlotClassifierInference()

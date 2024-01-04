@@ -1,13 +1,13 @@
 import pytorch_lightning as pl
 import torch
-import slot_labels
 
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from transformers import get_linear_schedule_with_warmup
 from seqeval.metrics import f1_score
-from data_loader import FashionDataModule
-from model import SlotClassifier
+from luna.slot_classifier.data_loader import FashionDataModule
+from luna.slot_classifier.model import SlotClassifier
+from luna.slot_classifier.slot_labels import slot_labels
 
 
 class SlotClassifierSystem(pl.LightningModule):
@@ -52,9 +52,9 @@ class SlotClassifierSystem(pl.LightningModule):
     def configure_optimizers(self):
         no_decay = ['bias', 'LayerNorm.weight']
         optimizer_grouped_parameters = [
-            {'params': [p for n, p in self.slot_classifier.model_transformers.named_parameters() if not any(nd in n for nd in no_decay)],
+            {'params': [p for n, p in self.slot_classifier.model_transfomers.named_parameters() if not any(nd in n for nd in no_decay)],
              'weight_decay': self.weight_decay},
-            {'params': [p for n, p in self.slot_classifier.model_transformers.named_parameters(
+            {'params': [p for n, p in self.slot_classifier.model_transfomers.named_parameters(
             ) if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
         optimizer = torch.optim.AdamW(

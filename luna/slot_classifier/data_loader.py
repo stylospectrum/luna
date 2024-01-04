@@ -7,7 +7,7 @@ from pandas import DataFrame
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
 from sklearn.model_selection import train_test_split
-from data_process import get_input_examples
+from luna.slot_classifier.data_process import get_input_examples
 
 
 class FashionDataset(Dataset):

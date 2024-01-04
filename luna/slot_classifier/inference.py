@@ -3,14 +3,14 @@ import torch
 import numpy as np
 
 from transformers import AutoTokenizer
-from luna.slot_classifier import slot_labels
+from luna.slot_classifier.slot_labels import slot_labels
 from luna.slot_classifier.model import SlotClassifier
 
 
 class SlotClassifierInference:
     def __init__(self):
         model_weights = torch.load(
-            'luna/slot_classifier/checkpoints/slot_classifier.bin', map_location=torch.device('cpu'))
+            'luna/slot_classifier/checkpoints/slot_classifier.bin')
         for key in list(model_weights):
             model_weights[key.replace(
                 "slot_classifier.", "")] = model_weights.pop(key)

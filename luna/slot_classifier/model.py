@@ -7,15 +7,15 @@ class SlotClassifier(torch.nn.Module):
     def __init__(self, labels):
         super().__init__()
 
-        self.model_transformers = AutoModel.from_pretrained('roberta-base')
+        self.model_transfomers = AutoModel.from_pretrained('roberta-base')
         self.labels = labels
         self.num_labels = len(self.labels)
         self.dropout = torch.nn.Dropout(0.1)
         self.linear = torch.nn.Linear(
-            self.model_transformers.config.hidden_size, self.num_labels)
+            self.model_transfomers.config.hidden_size, self.num_labels)
 
     def forward(self, input_ids, attention_mask, labels_ids=None):
-        x = self.model_transformers(input_ids, attention_mask=attention_mask)
+        x = self.model_transfomers(input_ids, attention_mask=attention_mask)
         x = self.dropout(x.last_hidden_state)
         logits = self.linear(x)
         loss = None
