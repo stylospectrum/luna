@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 from transformers import AutoTokenizer
-from luna.slot_classifier.slot_labels import slot_labels
+from luna.slot_classifier.label import slot_labels
 from luna.slot_classifier.model import SlotClassifier
 
 
@@ -11,6 +11,7 @@ class SlotClassifierInference:
     def __init__(self):
         model_weights = torch.load(
             'luna/slot_classifier/checkpoints/slot_classifier.bin')
+
         for key in list(model_weights):
             model_weights[key.replace(
                 "slot_classifier.", "")] = model_weights.pop(key)
@@ -18,10 +19,31 @@ class SlotClassifierInference:
         self.model = SlotClassifier(slot_labels)
         self.model.load_state_dict(model_weights)
         self.model.eval()
-        self.tokenizer = AutoTokenizer.from_pretrained('roberta-base')
+        self.tokenizer = AutoTokenizer.from_pretrained('distilroberta-base')
         self.nlp = spacy.load('en_core_web_sm')
 
-    def predict(self, text: str):
+    def convert_format(self, input_list: list):
+        output_list = []
+        current_text = ""
+        current_label = ""
+
+        for item in input_list:
+            if item['label'].startswith('B-'):
+                if current_text:
+                    output_list.append(
+                        {'text': current_text, 'label': current_label})
+
+                current_text = item['word']
+                current_label = item['label'][2:]
+            elif item['label'].startswith('I-'):
+                current_text += " " + item['word']
+
+        if current_text:
+            output_list.append({'text': current_text, 'label': current_label})
+
+        return output_list
+
+    def classify(self, text: str):
         cls_token = self.tokenizer.cls_token
         sep_token = self.tokenizer.sep_token
         unk_token = self.tokenizer.unk_token
@@ -88,4 +110,4 @@ class SlotClassifierInference:
                     'label': pred
                 })
 
-        return rs
+        return self.convert_format(rs)

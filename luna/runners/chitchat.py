@@ -1,28 +1,28 @@
 import bentoml
 import typing as t
 from typing import TYPE_CHECKING
-from luna.slot_classifier.inference import SlotClassifierInference
+from luna.chitchat.inference import ChitChatInference
 
 if TYPE_CHECKING:
     from bentoml._internal.runner.runner import RunnerMethod
 
     class RunnerImpl(bentoml.Runner):
-        encode: RunnerMethod
+        generate: RunnerMethod
 
 
-class SlotClassifierRunnable(bentoml.Runnable):
+class ChitChatRunnable(bentoml.Runnable):
     SUPPORTED_RESOURCES = ("nvidia.com/gpu",)
     SUPPORTS_CPU_MULTI_THREADING = True
 
     def __init__(self):
-        self.inference = SlotClassifierInference()
+        self.inference = ChitChatInference()
 
     @bentoml.Runnable.method(batchable=False)
-    def predict(self, text: str) -> list:
-        return self.inference.predict(text)
+    def generate(self, text: str) -> str:
+        return self.inference.generate(text)
 
 
-slot_classifier_runner = t.cast(
+chitchat_runner = t.cast(
     "RunnerImpl", bentoml.Runner(
-        SlotClassifierRunnable, name="slot_classifier")
+        ChitChatRunnable, name="chitchat")
 )

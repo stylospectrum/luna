@@ -1,7 +1,7 @@
 
 import torch
 import pytorch_lightning as pl
-import slot_labels
+import luna.slot_classifier.label as label
 
 from pandas import DataFrame
 from torch.utils.data import Dataset, DataLoader
@@ -79,12 +79,12 @@ class FashionDataModule(pl.LightningDataModule):
 
     def setup(self, stage):
         input_examples = get_input_examples()
-        tokenizer = AutoTokenizer.from_pretrained('roberta-base')
+        tokenizer = AutoTokenizer.from_pretrained('distilroberta-base')
         train_df, val_df = train_test_split(
             input_examples, test_size=0.1, random_state=42)
         self.batch_size = 32
-        self.train_dataset = FashionDataset(train_df, slot_labels, tokenizer)
-        self.val_dataset = FashionDataset(val_df, slot_labels, tokenizer)
+        self.train_dataset = FashionDataset(train_df, label, tokenizer)
+        self.val_dataset = FashionDataset(val_df, label, tokenizer)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)

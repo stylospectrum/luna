@@ -1,0 +1,1 @@
+intent_labels = ['chitchat', 'buy', 'ask']
