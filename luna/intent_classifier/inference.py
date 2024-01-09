@@ -9,7 +9,7 @@ from luna.intent_classifier.label import intent_labels
 class IntentClassifierInference:
     def __init__(self):
         model_weights = torch.load(
-            'luna/intent_classifier/checkpoints/intent_classifier.bin')
+            'luna/intent_classifier/checkpoints/intent_classifier.bin', map_location=torch.device('cpu'))
 
         for key in list(model_weights):
             model_weights[key.replace(

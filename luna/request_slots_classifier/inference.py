@@ -9,7 +9,7 @@ from luna.request_slots_classifier.label import request_slots_labels
 class RequestSlotsClassifierInference:
     def __init__(self):
         model_weights = torch.load(
-            'luna/request_slots_classifier/checkpoints/request_slots_classifier.bin')
+            'luna/request_slots_classifier/checkpoints/request_slots_classifier.bin', map_location=torch.device('cpu'))
 
         for key in list(model_weights):
             model_weights[key.replace(

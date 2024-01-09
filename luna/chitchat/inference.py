@@ -9,7 +9,8 @@ from luna.chitchat.util import featurize
 
 class ChitChatInference:
     def __init__(self):
-        model_weights = torch.load('luna/chitchat/checkpoints/chitchat.bin')
+        model_weights = torch.load(
+            'luna/chitchat/checkpoints/chitchat.bin', map_location=torch.device('cpu'))
 
         for key in list(model_weights):
             model_weights[key.replace("chitchat.", "")

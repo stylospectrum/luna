@@ -10,7 +10,7 @@ from luna.slot_classifier.model import SlotClassifier
 class SlotClassifierInference:
     def __init__(self):
         model_weights = torch.load(
-            'luna/slot_classifier/checkpoints/slot_classifier.bin')
+            'luna/slot_classifier/checkpoints/slot_classifier.bin', map_location=torch.device('cpu'))
 
         for key in list(model_weights):
             model_weights[key.replace(

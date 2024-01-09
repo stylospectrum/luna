@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class ChitChatRunnable(bentoml.Runnable):
-    SUPPORTED_RESOURCES = ("nvidia.com/gpu",)
+    SUPPORTED_RESOURCES = ("cpu",)
     SUPPORTS_CPU_MULTI_THREADING = True
 
     def __init__(self):

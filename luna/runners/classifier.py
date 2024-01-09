@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class ClassifierRunnable(bentoml.Runnable):
-    SUPPORTED_RESOURCES = ("nvidia.com/gpu",)
+    SUPPORTED_RESOURCES = ("cpu",)
     SUPPORTS_CPU_MULTI_THREADING = True
 
     def __init__(self):
@@ -26,7 +26,7 @@ class ClassifierRunnable(bentoml.Runnable):
     def classify(self, text: str, type: str = '') -> Any:
         if type == 'slot':
             return self.slot_classifier.classify(text)
-        
+
         if type == 'intent':
             return self.intent_classifier.classify(text)
 
