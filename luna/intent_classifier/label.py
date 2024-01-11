@@ -1,1 +1,1 @@
-intent_labels = ['chitchat', 'buy', 'ask']
+intent_labels = ['chitchat', 'buy', 'ask', 'add-to-cart']

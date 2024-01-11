@@ -23,15 +23,14 @@ class SlotClassifierInference:
         self.nlp = spacy.load('en_core_web_sm')
 
     def convert_format(self, input_list: list):
-        output_list = []
+        output_list = {}
         current_text = ""
         current_label = ""
 
         for item in input_list:
             if item['label'].startswith('B-'):
                 if current_text:
-                    output_list.append(
-                        {'text': current_text, 'label': current_label})
+                    output_list[current_label] = current_text
 
                 current_text = item['word']
                 current_label = item['label'][2:]
@@ -39,7 +38,7 @@ class SlotClassifierInference:
                 current_text += " " + item['word']
 
         if current_text:
-            output_list.append({'text': current_text, 'label': current_label})
+            output_list[current_label] = current_text
 
         return output_list
 
