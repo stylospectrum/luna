@@ -130,7 +130,17 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
     for product in products:
         if all(value in product[key] for key, value in slot.items()):
             for request_slot in request_slots:
-                response = response.replace(f'[{request_slot}]', str(product[request_slot]))
+                if 'availableSizes_list' in response:
+                    response = response.replace(
+                        '[availableSizes_list]', ','.join(product['availableSizes']))
+                elif 'availableSizes_small' in response:
+                    response = response.replace(
+                        '[availableSizes_small]', product['availableSizes'][0])
+                elif 'availableSizes_large' in response:
+                    response = response.replace(
+                        '[availableSizes_large]', product['availableSizes'][-1])
+                else:
+                    response = response.replace(f'[{request_slot}]', str(product[request_slot]))
             break
 
     return response

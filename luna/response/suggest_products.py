@@ -1,4 +1,4 @@
-def suggest_products(slot: dict[str, str], products: list[dict[str, str]], active = 'suggest'):
+def suggest_products(slot: dict[str, str], products: list[dict[str, str]], active='suggest'):
     suggested_product = []
     template_product_benefit = {
         'blouse': {
@@ -74,7 +74,7 @@ def suggest_products(slot: dict[str, str], products: list[dict[str, str]], activ
     for product in products:
         if all(value in product[key] for key, value in slot.items()):
             suggested_product.append(product)
-            
+
     if len(suggested_product) == 0:
         return 'Sorry, we don\'t have any product that match your preferences.', suggested_product
 
@@ -82,16 +82,18 @@ def suggest_products(slot: dict[str, str], products: list[dict[str, str]], activ
         suggested_product) > 5 else len(suggested_product)
     number_of_products = number_of_products if active == 'suggest' else 1
 
-    responses =  template_response[str(number_of_products)] if active == 'suggest' else [user_ask_response]
+    responses = template_response[str(number_of_products)] if active == 'suggest' else [
+        user_ask_response]
 
     for idx, product in enumerate(suggested_product[:number_of_products]):
-        if 'unique_feature/benefit' in responses[idx]:
-            responses[idx] = responses[idx].replace(
-                '[unique_feature/benefit]', template_product_benefit[product['type']]['unique_feature/benefit'])
+        if product['type'] in template_product_benefit:
+            if 'unique_feature/benefit' in responses[idx]:
+                responses[idx] = responses[idx].replace(
+                    '[unique_feature/benefit]', template_product_benefit[product['type']]['unique_feature/benefit'])
 
-        if 'occasion/usage' in responses[idx]:
-            responses[idx] = responses[idx].replace(
-                '[occasion/usage]', template_product_benefit[product['type']]['occasion/usage'])
+            if 'occasion/usage' in responses[idx]:
+                responses[idx] = responses[idx].replace(
+                    '[occasion/usage]', template_product_benefit[product['type']]['occasion/usage'])
 
         for key, value in product.items():
             responses[idx] = responses[idx].replace(f'[{key}]', str(value))

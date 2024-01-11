@@ -5,10 +5,11 @@ import bentoml
 import os
 
 
-from bentoml.io import JSON, Text
+from bentoml.io import JSON
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+from luna.request_slots_classifier.label import request_slots_labels
 from luna.runners.classifier import classifier_runner
 from luna.runners.chitchat import chitchat_runner
 from luna.response.collect_user_preference import collect_user_preference
@@ -31,10 +32,11 @@ with open('luna/data/products.json') as f:
     products = json.load(f)
 
 
-@svc.api(input=JSON(pydantic_model=MessageModel), output=Text())
+@svc.api(input=JSON(pydantic_model=MessageModel), output=JSON())
 async def predict(message: MessageModel) -> dict[str, str]:
     content: str = message.model_dump()['content']
     user_id: str = message.model_dump()['user_id']
+    response = 'I don\'t understand what you mean.'
 
     info = r.hgetall(f'luna:{user_id}')
     context = '' if 'context' not in info else info['context']
@@ -42,14 +44,14 @@ async def predict(message: MessageModel) -> dict[str, str]:
         info['user_preferences'])
     intent = await classifier_runner.classify.async_run(content, 'intent')
 
-    if intent == 'chitchat' and (context == '' or context is None):
-        return await chitchat_runner.generate.async_run(content)
+    if (intent == 'chitchat' and (context == '' or context is None)) or intent == 'add-to-cart':
+        response = await chitchat_runner.generate.async_run(content)
 
-    if intent == 'add-to-cart':
-        r.delete(f'luna:{user_id}')
-        return 'Your item has been added to cart.'
+        if intent == 'add-to-cart':
+            r.delete(f'luna:{user_id}')
+            context = ''
 
-    if intent == 'buy':
+    elif intent == 'buy':
         r.hset(f'luna:{user_id}', 'context', 'buy')
         context = 'buy'
 
@@ -61,46 +63,54 @@ async def predict(message: MessageModel) -> dict[str, str]:
         suggested_products = [] if suggested_products is None else json.loads(
             suggested_products)
 
+        for request_slot in request_slots_labels:
+            if request_slot in slot:
+                bot_active = 'suggest_products'
+                break
+
         if intent == 'ask':
             request_slots: list[str] = await classifier_runner.classify.async_run(content)
-
-            return answer_request_slots(request_slots, slot, suggested_products)
-
+            response = answer_request_slots(
+                request_slots, slot, suggested_products)
         else:
-            if (bot_active == 'collect_user_preference' or len(user_preferences) > 0):
-                if intent == 'buy':
+            if bot_active == 'collect_user_preference' or len(user_preferences) > 0:
+                if intent == 'buy' and len(user_preferences) == 0:
                     text = collect_user_preference(slot)
 
                     for key, value in slot.items():
-                        user_preferences[key] = value
-                        text = text.replace(f'[{key}]', value)
+                        if key not in request_slots_labels:
+                            user_preferences[key] = value
+                            text = text.replace(f'[{key}]', value)
 
                     r.hset(f'luna:{user_id}', 'user_preferences',
                            json.dumps(user_preferences))
-                    return text
+                    response = text
                 else:
                     for key, value in slot.items():
-                        user_preferences[key] = value
+                        if key not in request_slots_labels:
+                            user_preferences[key] = value
 
                     if len(user_preferences) == 4:
-                        response, sps = suggest_products(
+                        res, sps = suggest_products(
                             user_preferences, products, active='ask')
                         r.hset(f'luna:{user_id}',
                                'suggested_products', json.dumps(sps))
-                        return response
+                        response = res
+                    else:
+                        r.hset(f'luna:{user_id}', 'user_preferences',
+                               json.dumps(user_preferences))
+                        text = collect_user_preference(user_preferences)
 
-                    r.hset(f'luna:{user_id}', 'user_preferences',
-                           json.dumps(user_preferences))
-                    text = collect_user_preference(user_preferences)
+                        for key, value in user_preferences.items():
+                            text = text.replace(f'[{key}]', value)
 
-                    for key, value in user_preferences.items():
-                        text = text.replace(f'[{key}]', value)
-
-                    return text
+                        response = text
             else:
-                response, sps = suggest_products(slot, products)
+                res, sps = suggest_products(slot, products)
                 r.hset(f'luna:{user_id}',
                        'suggested_products', json.dumps(sps))
-                return response
+                response = res
 
-    return 'I don\'t understand what you mean.'
+    return {
+        'content': response
+    }

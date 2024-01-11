@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import torch
 
@@ -40,8 +41,24 @@ def get_features():
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     tokenizer.add_special_tokens({'additional_special_tokens': [
         '<pad>', '<eos>', '<bos>', '<user>', '<system>']})
-    df = pd.read_csv('luna/data/qna_chitchat_friendly.tsv', sep='\t')
+
+    with open('simmc2.1_dials_dstc11_train.json') as j:
+        fashion_raw = json.load(j)
+        fashion_data = []
+
+    for dialogue_data in fashion_raw['dialogue_data']:
+        if dialogue_data['domain'] == 'fashion':
+            for dialogue in dialogue_data['dialogue']:
+                if dialogue['transcript_annotated']['act'] == 'REQUEST:ADD_TO_CART' and dialogue['system_transcript_annotated']['act'] == 'CONFIRM:ADD_TO_CART':
+                    fashion_data.append({
+                        'Question': dialogue['transcript'],
+                        'Answer': dialogue['system_transcript']
+                    })
+
+    fashion_df = pd.DataFrame(fashion_data)
+    df = pd.read_csv('qna_chitchat_friendly.tsv', sep='\t')
     df = df.drop(['Source', 'Metadata'], axis=1)
+    df = pd.concat([df, fashion_df], ignore_index=True)
     rs = []
     features = [f for f in [featurize(tokenizer.encode(row['Question']), tokenizer.encode(
         row['Answer']), tokenizer) for index, row in df.iterrows()] if f is not None]
