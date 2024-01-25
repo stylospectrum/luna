@@ -9,9 +9,10 @@ from bentoml.io import JSON
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+from luna.intent_classifier.label import intent_labels
 from luna.request_slots_classifier.label import request_slots_labels
 from luna.runners.classifier import classifier_runner
-from luna.runners.chitchat import chitchat_runner
+from luna.runners.generator import generator_runner
 from luna.response.collect_user_preference import collect_user_preference
 from luna.response.answer_request_slots import answer_request_slots
 from luna.response.suggest_products import suggest_products
@@ -26,10 +27,15 @@ class MessageModel(BaseModel):
 
 redis_port = int(os.environ.get('REDIS_PORT'))
 r = redis.Redis(host='localhost', port=redis_port, decode_responses=True)
-svc = bentoml.Service('luna', runners=[chitchat_runner, classifier_runner])
+svc = bentoml.Service('luna', runners=[generator_runner, classifier_runner])
 
 with open('luna/data/products.json') as f:
     products = json.load(f)
+
+not_intent_buy_labels = intent_labels.copy()
+not_intent_buy_labels.remove('buy')
+not_intent_buy_labels.remove('ask')
+not_intent_buy_labels.remove('add_to_cart')
 
 
 @svc.api(input=JSON(pydantic_model=MessageModel), output=JSON())
@@ -44,14 +50,14 @@ async def predict(message: MessageModel) -> dict[str, str]:
         info['user_preferences'])
     intent = await classifier_runner.classify.async_run(content, 'intent')
 
-    if (intent == 'chitchat' and (context == '' or context is None)) or intent == 'add-to-cart':
-        response = await chitchat_runner.generate.async_run(content)
-
-        if intent == 'add-to-cart':
+    if (intent in not_intent_buy_labels and (context == '' or context is None)) or intent == 'add_to_cart':
+        response = await generator_runner.generate.async_run(content)
+        
+        if intent == 'add_to_cart':
             r.delete(f'luna:{user_id}')
             context = ''
 
-    elif intent == 'buy':
+    if intent == 'buy':
         r.hset(f'luna:{user_id}', 'context', 'buy')
         context = 'buy'
 
