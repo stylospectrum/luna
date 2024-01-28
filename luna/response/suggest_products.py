@@ -1,3 +1,6 @@
+import random
+
+
 def suggest_products(slot: dict[str, str], products: list[dict[str, str]], active='suggest'):
     suggested_product = []
     template_product_benefit = {
@@ -69,14 +72,33 @@ def suggest_products(slot: dict[str, str], products: list[dict[str, str]], activ
             '5. Finally, consider our [type] in [color] with [pattern] and [sleeveLength] sleeves, [unique_feature/benefit].'
         ]
     }
+    template_sorry_responses = [
+        "Unfortunately, we couldn't find any products that align with your preferences at the moment.",
+        "We regret to inform you that there are no products currently available that meet your specified preferences.",
+        "We're sorry, but it appears that there are no products in our inventory that match your selected preferences.",
+        "Apologies, but we couldn't locate any products that fit the criteria you provided.",
+        "Regrettably, there are no products in our catalog that correspond to your specified preferences.",
+        "We apologize, but it seems there are no products that meet the criteria you've set.",
+        "Sorry, we currently do not have any products that align with your indicated preferences.",
+        "Unfortunately, we were unable to find any products that match the preferences you specified.",
+        "We're sorry to inform you that there are no products available that meet your selected criteria.",
+        "Regretfully, there are no products in our inventory that satisfy the preferences you've chosen."
+    ]
     user_ask_response = 'Based on your preferences for [color], [pattern], [sleeveLength], I recommend this product. It\'s [occasion/usage], offering both style and comfort.'
+    customer_review_request = slot['customerReview']
+
+    slot.pop('customerReview', None)
 
     for product in products:
-        if all(value in product[key] for key, value in slot.items()):
+        if all(str(value) in str(product[key]) for key, value in slot.items()):
             suggested_product.append(product)
 
+    if customer_review_request == 'good':
+        suggested_product = list(
+            filter(lambda product: product['customerReview'] > 4, suggested_product))
+
     if len(suggested_product) == 0:
-        return 'Sorry, we don\'t have any product that match your preferences.', suggested_product
+        return random.choice(template_sorry_responses), suggested_product
 
     number_of_products = 5 if len(
         suggested_product) > 5 else len(suggested_product)

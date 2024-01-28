@@ -17,6 +17,8 @@ seqeval = "^1.2.2"
 torch = "^2.1.2"
 redis = "^5.0.1"
 python-dotenv = "^1.0.0"
+discord = "^2.3.2"
+pydantic-settings = "^2.1.0"
 
 [build-system]
 requires = ["poetry-core"]

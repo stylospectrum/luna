@@ -2,13 +2,12 @@ import json
 import random
 import redis
 import bentoml
-import os
 
 
 from bentoml.io import JSON
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
+from luna.config.settings import settings
 from luna.intent_classifier.label import intent_labels
 from luna.request_slots_classifier.label import request_slots_labels
 from luna.runners.classifier import classifier_runner
@@ -17,15 +16,13 @@ from luna.response.collect_user_preference import collect_user_preference
 from luna.response.answer_request_slots import answer_request_slots
 from luna.response.suggest_products import suggest_products
 
-load_dotenv()
-
 
 class MessageModel(BaseModel):
     user_id: str
     content: str
 
 
-redis_port = int(os.environ.get('REDIS_PORT'))
+redis_port = int(settings.REDIS_PORT)
 r = redis.Redis(host='localhost', port=redis_port, decode_responses=True)
 svc = bentoml.Service('luna', runners=[generator_runner, classifier_runner])
 
@@ -52,7 +49,7 @@ async def predict(message: MessageModel) -> dict[str, str]:
 
     if (intent in not_intent_buy_labels and (context == '' or context is None)) or intent == 'add_to_cart':
         response = await generator_runner.generate.async_run(content)
-        
+
         if intent == 'add_to_cart':
             r.delete(f'luna:{user_id}')
             context = ''
