@@ -29,7 +29,7 @@ class ChitChatInference:
         current_output = []
         question_id = self.tokenizer.encode(text)
 
-        while i < 100:
+        while i < 1024:
             instance = featurize(question_id, current_output,
                                  self.tokenizer, with_eos=False)
             input_ids = torch.tensor(instance["input_ids"]).unsqueeze(0)

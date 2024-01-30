@@ -31,6 +31,6 @@ async def on_message(message):
         async with session.post(url, headers=headers, json=data) as response:
             json_content = await response.json()
 
-    await message.channel.send(json_content['content'])
+    await message.reply(json_content['content'])
 
 bot.run(settings.DISCORD_BOT_TOKEN)

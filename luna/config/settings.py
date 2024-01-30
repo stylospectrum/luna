@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     PORT: Optional[str] = None
     REDIS_PORT: Optional[str] = None
     DISCORD_BOT_TOKEN: Optional[str] = None
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
 
 
 settings = Settings()

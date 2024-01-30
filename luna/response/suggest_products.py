@@ -85,7 +85,7 @@ def suggest_products(slot: dict[str, str], products: list[dict[str, str]], activ
         "Regretfully, there are no products in our inventory that satisfy the preferences you've chosen."
     ]
     user_ask_response = 'Based on your preferences for [color], [pattern], [sleeveLength], I recommend this product. It\'s [occasion/usage], offering both style and comfort.'
-    customer_review_request = slot['customerReview']
+    customer_review_request = slot['customerReview'] if 'customerReview' in slot else None
 
     slot.pop('customerReview', None)
 

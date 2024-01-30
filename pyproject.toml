@@ -19,6 +19,7 @@ redis = "^5.0.1"
 python-dotenv = "^1.0.0"
 discord = "^2.3.2"
 pydantic-settings = "^2.1.0"
+python-telegram-bot = "^20.7"
 
 [build-system]
 requires = ["poetry-core"]
