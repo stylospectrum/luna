@@ -14,9 +14,13 @@ class IntentClassifier(torch.nn.Module):
             self.model_transformers.config.hidden_size, len(labels))
         self.criterion = nn.CrossEntropyLoss()
 
-    def forward(self, input_ids, attention_mask, label_ids=None):
+    def forward(self, input_ids, attention_mask, label_ids=None, return_features=False):
         x = self.model_transformers(
             input_ids=input_ids, attention_mask=attention_mask)
+        
+        if return_features:
+            return x.pooler_output
+
         x = self.dropout(x.pooler_output)
         logits = self.linear(x)
         loss = 0

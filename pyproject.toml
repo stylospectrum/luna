@@ -24,3 +24,6 @@ python-telegram-bot = "^20.7"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "luna.serve_script:start"

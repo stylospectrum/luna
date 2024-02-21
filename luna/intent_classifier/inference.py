@@ -20,7 +20,20 @@ class IntentClassifierInference:
         self.model.eval()
         self.tokenizer = AutoTokenizer.from_pretrained('distilroberta-base')
 
-    def classify(self, text):
+    def get_embeddings(self, texts: list[str]):
+        inputs = self.tokenizer(
+            texts,
+            max_length=125,
+            padding="max_length",
+            return_tensors='pt',
+        )
+
+        with torch.no_grad():
+            outputs = self.model(**inputs, return_features=True)
+
+        return outputs
+
+    def classify(self, text: str):
         input = self.tokenizer(
             text,
             max_length=125,
@@ -30,6 +43,7 @@ class IntentClassifierInference:
 
         with torch.no_grad():
             _, logits = self.model(**input)
+
         _, predicted = torch.max(logits.cpu(), dim=1)
 
         return intent_labels[predicted]

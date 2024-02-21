@@ -3,8 +3,8 @@ import random
 import redis
 import bentoml
 
-
-from bentoml.io import JSON
+from pandas import Series
+from bentoml.io import JSON, NumpyNdarray, PandasSeries
 from pydantic import BaseModel
 
 from luna.config.settings import settings
@@ -117,3 +117,11 @@ async def predict(message: MessageModel) -> dict[str, str]:
     return {
         'content': response
     }
+
+
+@svc.api(input=PandasSeries(), output=NumpyNdarray())
+async def get_embeddings(texts: Series):
+    texts = texts.to_list()
+    texts = list(filter(lambda x: x != '', list(texts[0])))
+    embeddings = await classifier_runner.classify.async_run(texts, 'intent', 'get_embeddings')
+    return embeddings.numpy()
