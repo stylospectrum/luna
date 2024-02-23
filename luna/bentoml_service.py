@@ -4,7 +4,7 @@ import redis
 import bentoml
 
 from pandas import Series
-from bentoml.io import JSON, NumpyNdarray, PandasSeries
+from bentoml.io import JSON, NumpyNdarray, PandasSeries, Text
 from pydantic import BaseModel
 
 from luna.config.settings import settings
@@ -125,3 +125,7 @@ async def get_embeddings(texts: Series):
     texts = list(filter(lambda x: x != '', list(texts[0])))
     embeddings = await classifier_runner.classify.async_run(texts, 'intent', 'get_embeddings')
     return embeddings.numpy()
+
+@svc.api(input=Text(), output=Text())
+async def classify(text: str):
+    return await classifier_runner.classify.async_run(text, 'intent')
