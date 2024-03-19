@@ -10,17 +10,18 @@ from luna.slot_classifier.model import SlotClassifier
 class SlotClassifierInference:
     def __init__(self):
         model_weights = torch.load(
-            'luna/slot_classifier/checkpoints/slot_classifier.bin', map_location=torch.device('cpu'))
+            "luna/slot_classifier/checkpoints/slot_classifier.bin",
+            map_location=torch.device("cpu"),
+        )
 
         for key in list(model_weights):
-            model_weights[key.replace(
-                "slot_classifier.", "")] = model_weights.pop(key)
+            model_weights[key.replace("slot_classifier.", "")] = model_weights.pop(key)
 
         self.model = SlotClassifier(slot_labels)
         self.model.load_state_dict(model_weights)
         self.model.eval()
-        self.tokenizer = AutoTokenizer.from_pretrained('distilroberta-base')
-        self.nlp = spacy.load('en_core_web_sm')
+        self.tokenizer = AutoTokenizer.from_pretrained("distilroberta-base")
+        self.nlp = spacy.load("en_core_web_sm")
 
     def convert_format(self, input_list: list):
         output_list = {}
@@ -28,14 +29,14 @@ class SlotClassifierInference:
         current_label = ""
 
         for item in input_list:
-            if item['label'].startswith('B-'):
+            if item["label"].startswith("B-"):
                 if current_text:
                     output_list[current_label] = current_text
 
-                current_text = item['word']
-                current_label = item['label'][2:]
-            elif item['label'].startswith('I-'):
-                current_text += " " + item['word']
+                current_text = item["word"]
+                current_label = item["label"][2:]
+            elif item["label"].startswith("I-"):
+                current_text += " " + item["word"]
 
         if current_text:
             output_list[current_label] = current_text
@@ -61,13 +62,14 @@ class SlotClassifierInference:
             if not word_tokens:
                 word_tokens = [unk_token]
             tokens.extend(word_tokens)
-            label_mask.extend([pad_token_label_id + 1] +
-                              [pad_token_label_id] * (len(word_tokens) - 1))
+            label_mask.extend(
+                [pad_token_label_id + 1] + [pad_token_label_id] * (len(word_tokens) - 1)
+            )
 
         special_tokens_count = 2
         if len(tokens) > max_seq_len - special_tokens_count:
-            tokens = tokens[:(max_seq_len - special_tokens_count)]
-            label_mask = label_mask[:(max_seq_len - special_tokens_count)]
+            tokens = tokens[: (max_seq_len - special_tokens_count)]
+            label_mask = label_mask[: (max_seq_len - special_tokens_count)]
 
         tokens += [sep_token]
         label_mask += [pad_token_label_id]
@@ -81,15 +83,17 @@ class SlotClassifierInference:
         padding_length = max_seq_len - len(input_ids)
 
         input_ids = torch.tensor(
-            input_ids + ([pad_token_id] * padding_length)).unsqueeze(0)
+            input_ids + ([pad_token_id] * padding_length)
+        ).unsqueeze(0)
         attention_mask = torch.tensor(
-            attention_mask + ([0 if mask_padding_with_zero else 1] * padding_length)).unsqueeze(0)
+            attention_mask + ([0 if mask_padding_with_zero else 1] * padding_length)
+        ).unsqueeze(0)
         label_mask = torch.tensor(
-            label_mask + ([pad_token_label_id] * padding_length)).numpy()
+            label_mask + ([pad_token_label_id] * padding_length)
+        ).numpy()
 
         with torch.no_grad():
-            _, logits = self.model(input_ids=input_ids,
-                                   attention_mask=attention_mask)
+            _, logits = self.model(input_ids=input_ids, attention_mask=attention_mask)
 
         preds = np.argmax(logits.detach().cpu().numpy(), axis=2)
 
@@ -103,10 +107,7 @@ class SlotClassifierInference:
         preds_list.pop(0)
 
         for word, pred in zip(words, preds_list):
-            if pred != 'O':
-                rs.append({
-                    'word': word,
-                    'label': pred
-                })
+            if pred != "O":
+                rs.append({"word": word, "label": pred})
 
         return self.convert_format(rs)

@@ -20,6 +20,7 @@ python-dotenv = "^1.0.0"
 discord = "^2.3.2"
 pydantic-settings = "^2.1.0"
 python-telegram-bot = "^20.7"
+black = "^24.3.0"
 
 [build-system]
 requires = ["poetry-core"]

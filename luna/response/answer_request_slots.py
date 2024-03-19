@@ -1,9 +1,11 @@
 import random
 
 
-def answer_request_slots(request_slots: list[str], slot: dict[str, str], products: list[dict[str, str]]):
+def answer_request_slots(
+    request_slots: list[str], slot: dict[str, str], products: list[dict[str, str]]
+):
     template = {
-        'availableSizes': [
+        "availableSizes": [
             "We offer sizes ranging from [availableSizes_small] to [availableSizes_large] for this product.",
             "Sizes available include [availableSizes_list].",
             "You can choose from a variety of sizes: [availableSizes_list].",
@@ -13,9 +15,9 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "You can find this product in sizes ranging from [availableSizes_small] to [availableSizes_large].",
             "This comes in a wide range of sizes, from [availableSizes_small] to [availableSizes_large].",
             "Sizes [availableSizes_small] to [availableSizes_large] are currently available for this item.",
-            "This product is offered in several sizes, including [availableSizes_list]."
+            "This product is offered in several sizes, including [availableSizes_list].",
         ],
-        'brand': [
+        "brand": [
             "This product is by [brand], renowned for their quality.",
             "We carry the popular [brand] for this item.",
             "[brand], known for durability, makes this product.",
@@ -27,7 +29,7 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "[brand], synonymous with excellence, produces this.",
             "Made by [brand], this item stands out for its exceptional quality.",
         ],
-        'customerReview': [
+        "customerReview": [
             "Customers have rated this product [type] out of [customerReview] on average.",
             "This item generally receives positive reviews, with an average rating of [customerReview].",
             "Most customers have given this a rating of [customerReview] for its quality.",
@@ -39,10 +41,10 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "Customers love this product, giving it an average rating of [customerReview].",
             "It's a customer favorite, rated [customerReview] on average.",
         ],
-        'size': [
-            'To choose the right size, I recommend checking our size chart which provides detailed measurements. It will help you select the size that fits you best.'
+        "size": [
+            "To choose the right size, I recommend checking our size chart which provides detailed measurements. It will help you select the size that fits you best."
         ],
-        'price': [
+        "price": [
             "The price of this item is set at $[price].",
             "This product is available for $[price].",
             "You can purchase this item for $[price].",
@@ -54,7 +56,7 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "For $[price], this product can be yours.",
             "This item is being offered at a price of $[price].",
         ],
-        'availableSizes-brand': [
+        "availableSizes-brand": [
             "[brand] offers this product in sizes ranging from [availableSizes_small] to [availableSizes_large].",
             "For [brand]'s items, sizes available include [availableSizes_list].",
             "With [brand], you can find this in sizes [availableSizes_list].",
@@ -66,7 +68,7 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "In [brand], we offer this product in sizes [availableSizes_list].",
             "Sizes [availableSizes_list] for this item are offered by [brand].",
         ],
-        'brand-customerReview': [
+        "brand-customerReview": [
             "[brand]'s products, known for their quality, have an average customer review of [customerReview].",
             "Customers rate [brand]'s items highly, with an average review of [customerReview].",
             "[brand], receiving an average customer review of [customerReview], is known for its excellence.",
@@ -78,7 +80,7 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "[brand]'s items are popular among customers, averaging [customerReview] in reviews.",
             "With customer reviews averaging [customerReview], [brand] maintains high standards.",
         ],
-        'customerReview-price': [
+        "customerReview-price": [
             "This item, priced at $[price], has an average customer review of [customerReview].",
             "At $[price], this product has received a customer review average of [customerReview].",
             "With a price of $[price], it boasts a customer review average of [customerReview].",
@@ -90,7 +92,7 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "With an average review of [customerReview], this item is available at $[price].",
             "Customers rate this at [customerReview] stars, and it's priced at $[price].",
         ],
-        'availableSizes-price': [
+        "availableSizes-price": [
             "Sizes [availableSizes_list] for this item are priced at $[price].",
             "We offer this in sizes [availableSizes_list] at a price of $[price].",
             "This is available in sizes [availableSizes_list] for $[price].",
@@ -101,46 +103,51 @@ def answer_request_slots(request_slots: list[str], slot: dict[str, str], product
             "Sizes [availableSizes_list] of this item are available at $[price].",
             "This comes in a range of sizes from [availableSizes_list] at a cost of $[price].",
             "For a price of $[price], we offer this in sizes [availableSizes_list].",
-        ]
+        ],
     }
 
-    response = ''
+    response = ""
 
-    if request_slots == ['availableSizes']:
-        response = random.choice(template.get('availableSizes', []))
-    elif request_slots == ['brand']:
-        response = random.choice(template.get('brand', []))
-    elif request_slots == ['customerReview']:
-        response = random.choice(template.get('customerReview', []))
-    elif request_slots == ['size']:
-        response = random.choice(template.get('size', []))
-    elif request_slots == ['price']:
-        response = random.choice(template.get('price', []))
-    elif 'availableSizes' in request_slots and 'brand' in request_slots:
-        response = random.choice(template.get('availableSizes-brand', []))
-    elif 'brand' in request_slots and 'customerReview' in request_slots:
-        response = random.choice(template.get('brand-customerReview', []))
-    elif 'customerReview' in request_slots and 'price' in request_slots:
-        response = random.choice(template.get('customerReview-price', []))
-    elif 'availableSizes' in request_slots and 'price' in request_slots:
-        response = random.choice(template.get('availableSizes-price', []))
+    if request_slots == ["availableSizes"]:
+        response = random.choice(template.get("availableSizes", []))
+    elif request_slots == ["brand"]:
+        response = random.choice(template.get("brand", []))
+    elif request_slots == ["customerReview"]:
+        response = random.choice(template.get("customerReview", []))
+    elif request_slots == ["size"]:
+        response = random.choice(template.get("size", []))
+    elif request_slots == ["price"]:
+        response = random.choice(template.get("price", []))
+    elif "availableSizes" in request_slots and "brand" in request_slots:
+        response = random.choice(template.get("availableSizes-brand", []))
+    elif "brand" in request_slots and "customerReview" in request_slots:
+        response = random.choice(template.get("brand-customerReview", []))
+    elif "customerReview" in request_slots and "price" in request_slots:
+        response = random.choice(template.get("customerReview-price", []))
+    elif "availableSizes" in request_slots and "price" in request_slots:
+        response = random.choice(template.get("availableSizes-price", []))
     else:
-        response = 'Im sorry, I dont have information to answer your question.'
+        response = "Im sorry, I dont have information to answer your question."
 
     for product in products:
         if all(value in product[key] for key, value in slot.items()):
             for request_slot in request_slots:
-                if 'availableSizes_list' in response:
+                if "availableSizes_list" in response:
                     response = response.replace(
-                        '[availableSizes_list]', ', '.join(product['availableSizes']))
-                elif 'availableSizes_small' in response:
+                        "[availableSizes_list]", ", ".join(product["availableSizes"])
+                    )
+                elif "availableSizes_small" in response:
                     response = response.replace(
-                        '[availableSizes_small]', product['availableSizes'][0])
-                elif 'availableSizes_large' in response:
+                        "[availableSizes_small]", product["availableSizes"][0]
+                    )
+                elif "availableSizes_large" in response:
                     response = response.replace(
-                        '[availableSizes_large]', product['availableSizes'][-1])
+                        "[availableSizes_large]", product["availableSizes"][-1]
+                    )
                 else:
-                    response = response.replace(f'[{request_slot}]', str(product[request_slot]))
+                    response = response.replace(
+                        f"[{request_slot}]", str(product[request_slot])
+                    )
             break
 
     return response

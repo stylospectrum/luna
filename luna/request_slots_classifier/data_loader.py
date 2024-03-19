@@ -21,20 +21,21 @@ class RequestSlotsDataset(Dataset):
 
     def __getitem__(self, idx):
         data_row = self.data.iloc[idx]
-        sentence = data_row['text']
+        sentence = data_row["text"]
 
         encoding = self.tokenizer(
             sentence,
             max_length=125,
             padding="max_length",
-            return_tensors='pt',
+            return_tensors="pt",
         )
 
         return dict(
             input_ids=encoding["input_ids"].flatten(),
             attention_mask=encoding["attention_mask"].flatten(),
             label_ids=torch.tensor(
-                data_row[-self.num_labels:].values.astype(np.float32))
+                data_row[-self.num_labels :].values.astype(np.float32)
+            ),
         )
 
 
@@ -47,9 +48,9 @@ class RequestSlotsDataModule(pl.LightningDataModule):
         input_examples = get_input_examples()
         tokenizer = AutoTokenizer.from_pretrained("distilroberta-base")
         train_df, val_df = train_test_split(
-            input_examples, test_size=0.2, random_state=42)
-        self.train_dataset = RequestSlotsDataset(
-            train_df, self.labels, tokenizer)
+            input_examples, test_size=0.2, random_state=42
+        )
+        self.train_dataset = RequestSlotsDataset(train_df, self.labels, tokenizer)
         self.val_dataset = RequestSlotsDataset(val_df, self.labels, tokenizer)
         self.batch_size = 64
 

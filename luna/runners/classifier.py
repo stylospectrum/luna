@@ -23,12 +23,12 @@ class ClassifierRunnable(bentoml.Runnable):
         self.request_slots_classifier = RequestSlotsClassifierInference()
 
     @bentoml.Runnable.method(batchable=False)
-    def classify(self, text: str | list[str], type: str = '', action = 'classify') -> Any:
-        if action == 'classify':
-            if type == 'slot':
+    def classify(self, text: str | list[str], type: str = "", action="classify") -> Any:
+        if action == "classify":
+            if type == "slot":
                 return self.slot_classifier.classify(text)
 
-            if type == 'intent':
+            if type == "intent":
                 return self.intent_classifier.classify(text)
 
             return self.request_slots_classifier.classify(text)
@@ -37,6 +37,5 @@ class ClassifierRunnable(bentoml.Runnable):
 
 
 classifier_runner = t.cast(
-    "RunnerImpl", bentoml.Runner(
-        ClassifierRunnable, name="classifier")
+    "RunnerImpl", bentoml.Runner(ClassifierRunnable, name="classifier")
 )

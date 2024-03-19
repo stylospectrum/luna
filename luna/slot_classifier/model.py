@@ -6,12 +6,13 @@ class SlotClassifier(nn.Module):
     def __init__(self, labels):
         super().__init__()
 
-        self.model_transformers = AutoModel.from_pretrained('distilroberta-base')
+        self.model_transformers = AutoModel.from_pretrained("distilroberta-base")
         self.labels = labels
         self.num_labels = len(self.labels)
         self.dropout = nn.Dropout(0.1)
         self.linear = nn.Linear(
-            self.model_transformers.config.hidden_size, self.num_labels)
+            self.model_transformers.config.hidden_size, self.num_labels
+        )
 
     def forward(self, input_ids, attention_mask, labels_ids=None):
         x = self.model_transformers(input_ids, attention_mask=attention_mask)
@@ -27,7 +28,6 @@ class SlotClassifier(nn.Module):
                 active_labels = labels_ids.view(-1)[active_loss]
                 loss = loss_fct(active_logits, active_labels)
             else:
-                loss = loss_fct(logits.view(-1, self.num_labels),
-                                labels_ids.view(-1))
+                loss = loss_fct(logits.view(-1, self.num_labels), labels_ids.view(-1))
 
         return loss, logits

@@ -1,4 +1,3 @@
-
 import torch
 import pytorch_lightning as pl
 import luna.slot_classifier.label as label
@@ -28,10 +27,10 @@ class FashionDataset(Dataset):
 
     def __getitem__(self, idx):
         data_row = self.data.iloc[idx]
-        words = data_row['words']
+        words = data_row["words"]
         sls = []
 
-        for s in data_row['slot'].split():
+        for s in data_row["slot"].split():
             sls.append(self.labels.index(s))
 
         tokens = []
@@ -43,12 +42,13 @@ class FashionDataset(Dataset):
                 word_tokens = [self.unk_token]
             tokens.extend(word_tokens)
             labels_ids.extend(
-                [int(slot_label)] + [self.pad_token_label_id] * (len(word_tokens) - 1))
+                [int(slot_label)] + [self.pad_token_label_id] * (len(word_tokens) - 1)
+            )
 
         special_tokens_count = 2
         if len(tokens) > self.max_seq_len - special_tokens_count:
-            tokens = tokens[:(self.max_seq_len - special_tokens_count)]
-            labels_ids = labels_ids[:(self.max_seq_len - special_tokens_count)]
+            tokens = tokens[: (self.max_seq_len - special_tokens_count)]
+            labels_ids = labels_ids[: (self.max_seq_len - special_tokens_count)]
 
         tokens += [self.sep_token]
         labels_ids += [self.pad_token_label_id]
@@ -57,13 +57,13 @@ class FashionDataset(Dataset):
         labels_ids = [self.pad_token_label_id] + labels_ids
 
         input_ids = self.tokenizer.convert_tokens_to_ids(tokens)
-        attention_mask = [
-            1 if self.mask_padding_with_zero else 0] * len(input_ids)
+        attention_mask = [1 if self.mask_padding_with_zero else 0] * len(input_ids)
 
         padding_length = self.max_seq_len - len(input_ids)
         input_ids = input_ids + ([self.pad_token_id] * padding_length)
-        attention_mask = attention_mask + \
-            ([0 if self.mask_padding_with_zero else 1] * padding_length)
+        attention_mask = attention_mask + (
+            [0 if self.mask_padding_with_zero else 1] * padding_length
+        )
         labels_ids = labels_ids + ([self.pad_token_label_id] * padding_length)
 
         return dict(
@@ -79,9 +79,10 @@ class FashionDataModule(pl.LightningDataModule):
 
     def setup(self, stage):
         input_examples = get_input_examples()
-        tokenizer = AutoTokenizer.from_pretrained('distilroberta-base')
+        tokenizer = AutoTokenizer.from_pretrained("distilroberta-base")
         train_df, val_df = train_test_split(
-            input_examples, test_size=0.1, random_state=42)
+            input_examples, test_size=0.1, random_state=42
+        )
         self.batch_size = 32
         self.train_dataset = FashionDataset(train_df, label, tokenizer)
         self.val_dataset = FashionDataset(val_df, label, tokenizer)

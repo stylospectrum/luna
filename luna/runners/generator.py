@@ -23,6 +23,5 @@ class ChitChatRunnable(bentoml.Runnable):
 
 
 generator_runner = t.cast(
-    "RunnerImpl", bentoml.Runner(
-        ChitChatRunnable, name="generator")
+    "RunnerImpl", bentoml.Runner(ChitChatRunnable, name="generator")
 )

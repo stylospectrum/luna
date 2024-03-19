@@ -1,4 +1,3 @@
-
 import pytorch_lightning as pl
 
 from torch.utils.data import Dataset, DataLoader
@@ -20,7 +19,7 @@ class ChitChatDataset(Dataset):
         return dict(
             input_ids=data_row["input_ids"],
             token_type_ids=data_row["token_type_ids"],
-            labels=data_row["labels"]
+            labels=data_row["labels"],
         )
 
 
@@ -30,8 +29,7 @@ class ChitChatDataModule(pl.LightningDataModule):
 
     def setup(self, stage: str):
         features = get_features()
-        train_df, val_df = train_test_split(
-            features, test_size=0.2, random_state=42)
+        train_df, val_df = train_test_split(features, test_size=0.2, random_state=42)
         self.train_dataset = ChitChatDataset(train_df)
         self.val_dataset = ChitChatDataset(val_df)
         self.batch_size = 32
