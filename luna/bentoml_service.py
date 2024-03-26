@@ -67,11 +67,13 @@ async def predict(message: MessageModel) -> dict[str, str]:
         r.hset(f"luna:{user_id}", "context", "buy")
         context = "buy"
 
-    if context == "buy":
+    if context == "buy" and intent not in not_intent_buy_labels:
         slot: dict[str, str] = await classifier_runner.classify.async_run(
             content, "slot"
         )
+
         bot_active = random.choice(["collect_user_preference", "suggest_products"])
+
         suggested_products = r.hget(f"luna:{user_id}", "suggested_products")
         suggested_products = (
             [] if suggested_products is None else json.loads(suggested_products)
@@ -82,12 +84,41 @@ async def predict(message: MessageModel) -> dict[str, str]:
                 bot_active = "suggest_products"
                 break
 
-        if intent == "ask":
+        request_slots: list[str] = r.hget(f"luna:{user_id}", "request_slots")
+        request_slots = [] if request_slots is None else json.loads(request_slots)
+
+        if len(request_slots) > 0:
+            if len(slot) > 0:
+                response = answer_request_slots(request_slots, slot, suggested_products)
+                r.hdel(f"luna:{user_id}", "request_slots")
+                r.hset(f"luna:{user_id}", "slot", json.dumps(slot))
+            else:
+                response = "I don't understand what you mean."
+
+        elif intent == "ask":
             request_slots: list[str] = await classifier_runner.classify.async_run(
                 content
             )
-            response = answer_request_slots(request_slots, slot, suggested_products)
+
+            which_one = r.hget(f"luna:{user_id}", "which_one") == '1'
+
+            if which_one:
+                local_slot = r.hget(f"luna:{user_id}", "slot")
+                local_slot = {} if local_slot is None else json.loads(local_slot)
+                response = answer_request_slots(request_slots, local_slot, suggested_products)
+
+            elif len(slot) == 0 and len(suggested_products) > 1:
+                response = "Which one?"
+                r.hset(f"luna:{user_id}", "request_slots", json.dumps(request_slots))
+                r.hset(f"luna:{user_id}", "which_one", "1")
+            else:
+                response = answer_request_slots(request_slots, slot, suggested_products)
+
         else:
+            r.hdel(f"luna:{user_id}", "request_slots")
+            r.hdel(f"luna:{user_id}", "which_one")
+            r.hdel(f"luna:{user_id}", "slot")
+    
             if bot_active == "collect_user_preference" or len(user_preferences) > 0:
                 if intent == "buy" and len(user_preferences) == 0:
                     text = collect_user_preference(slot)
@@ -112,7 +143,12 @@ async def predict(message: MessageModel) -> dict[str, str]:
                         res, sps = suggest_products(
                             user_preferences, products, active="ask"
                         )
-                        r.hset(f"luna:{user_id}", "suggested_products", json.dumps(sps))
+                        if len(sps) > 0:
+                            r.hset(
+                                f"luna:{user_id}", "suggested_products", json.dumps(sps)
+                            )
+                        else:
+                            r.delete(f"luna:{user_id}")
                         response = res
                     else:
                         r.hset(
@@ -128,7 +164,12 @@ async def predict(message: MessageModel) -> dict[str, str]:
                         response = text
             else:
                 res, sps = suggest_products(slot, products)
-                r.hset(f"luna:{user_id}", "suggested_products", json.dumps(sps))
+
+                if len(sps) > 0:
+                    r.hset(f"luna:{user_id}", "suggested_products", json.dumps(sps))
+                else:
+                    r.delete(f"luna:{user_id}")
+
                 response = res
 
     return {"content": response}
