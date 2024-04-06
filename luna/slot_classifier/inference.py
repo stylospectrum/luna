@@ -110,4 +110,9 @@ class SlotClassifierInference:
             if pred != "O":
                 rs.append({"word": word, "label": pred})
 
-        return self.convert_format(rs)
+        rs = self.convert_format(rs)
+    
+        for ent in doc.ents:
+            rs[ent.label_.lower()] = ent.text
+
+        return rs
